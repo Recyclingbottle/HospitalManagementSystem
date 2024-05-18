@@ -1,27 +1,25 @@
 public class SpecialistDoctor extends Doctor {
-    // 의사의 하위 전문 분야
     private String subSpecialty;
 
-    // 생성자
-    public SpecialistDoctor(int userId, String name, int age, String contactInfo, String specialty, String subSpecialty) {
-        super(userId, name, age, contactInfo, specialty);
+    public SpecialistDoctor(String name, int age, String contactInfo, boolean isOnDuty, double salary, String specialty, String subSpecialty) {
+        super(name, age, contactInfo, isOnDuty, salary, specialty);
         this.subSpecialty = subSpecialty;
     }
 
-    // 하위 전문 분야 정보 출력
+    // 전문 분야와 하위 전문 분야를 출력하는 메소드
     public void viewSpecialtyInfo() {
         viewInfo();
         System.out.println("하위 전문 분야: " + subSpecialty);
     }
 
-    // 전문의 정보 출력 (오버라이딩)
+    // 전문의사 정보를 출력하는 메소드 (오버라이딩)
     @Override
     public void viewInfo() {
         super.viewInfo();
         System.out.println("하위 전문 분야: " + subSpecialty);
     }
 
-    // Getter 및 Setter 메소드
+    // Getter와 Setter 메소드
     public String getSubSpecialty() {
         return subSpecialty;
     }

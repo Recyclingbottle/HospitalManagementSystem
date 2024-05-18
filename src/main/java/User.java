@@ -1,40 +1,22 @@
-import java.util.Scanner;
-
 public class User {
-    // 사용자 고유 ID
-    private int userId;
-    // 사용자 이름
     private String name;
-    // 사용자 나이
     private int age;
-    // 사용자 연락처 정보
     private String contactInfo;
 
-    // 생성자
-    public User(int userId, String name, int age, String contactInfo) {
-        this.userId = userId;
+    public User(String name, int age, String contactInfo) {
         this.name = name;
         this.age = age;
         this.contactInfo = contactInfo;
     }
 
-    // 사용자 정보 출력
+    // 사용자 정보를 출력하는 메소드
     public void viewInfo() {
-        System.out.println("사용자 ID: " + userId);
         System.out.println("이름: " + name);
         System.out.println("나이: " + age);
         System.out.println("연락처: " + contactInfo);
     }
 
-    // Getter 및 Setter 메소드
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
+    // Getter와 Setter 메소드
     public String getName() {
         return name;
     }
