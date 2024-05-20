@@ -1,19 +1,14 @@
-public class User {
+package com.hospital.dto;
+
+public class UserDTO {
     private String name;
     private int age;
     private String contactInfo;
 
-    public User(String name, int age, String contactInfo) {
+    public UserDTO(String name, int age, String contactInfo) {
         this.name = name;
         this.age = age;
         this.contactInfo = contactInfo;
-    }
-
-    // 사용자 정보를 출력하는 메소드
-    public void viewInfo() {
-        System.out.println("이름: " + name);
-        System.out.println("나이: " + age);
-        System.out.println("연락처: " + contactInfo);
     }
 
     // Getter와 Setter 메소드

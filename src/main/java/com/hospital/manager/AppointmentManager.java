@@ -1,16 +1,22 @@
+package com.hospital.manager;
+
+import com.hospital.dto.AppointmentDTO;
+import com.hospital.dto.DoctorDTO;
+import com.hospital.dto.PatientDTO;
+
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
-public class AppointmentManagement {
-    private static List<Appointment> appointments = new ArrayList<>();
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+public class AppointmentManager {
+    private List<AppointmentDTO> appointments;
 
-    public static void menu(Scanner scanner) {
+    public AppointmentManager() {
+        this.appointments = new ArrayList<>();
+    }
+
+    public void menu(Scanner scanner) {
         while (true) {
             System.out.println("1. 진료 예약 추가");
             System.out.println("2. 진료 예약 정보 보기");
@@ -19,7 +25,7 @@ public class AppointmentManagement {
             System.out.println("5. 돌아가기");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();   
+            scanner.nextLine();  // Enter key 처리
 
             switch (choice) {
                 case 1:
@@ -43,10 +49,10 @@ public class AppointmentManagement {
         }
     }
 
-    private static void addAppointment(Scanner scanner) {
+    private void addAppointment(Scanner scanner) {
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        Patient patient = PatientManagement.findPatientByName(patientName);
+        PatientDTO patient = PatientManager.findPatientByName(patientName);
         if (patient == null) {
             System.out.println("해당 이름의 환자가 없습니다.");
             return;
@@ -54,7 +60,7 @@ public class AppointmentManagement {
 
         System.out.print("의사 이름: ");
         String doctorName = scanner.nextLine();
-        Doctor doctor = DoctorManagement.findDoctorByName(doctorName);
+        DoctorDTO doctor = DoctorManager.findDoctorByName(doctorName);
         if (doctor == null) {
             System.out.println("해당 이름의 의사가 없습니다.");
             return;
@@ -64,87 +70,78 @@ public class AppointmentManagement {
         String dateStr = scanner.nextLine();
         Date appointmentDate;
         try {
-            appointmentDate = dateFormat.parse(dateStr);
-        } catch (ParseException e) {
+            appointmentDate = java.sql.Date.valueOf(dateStr); // 문자열을 Date 객체로 변환
+        } catch (Exception e) {
             System.out.println("날짜 형식이 잘못되었습니다.");
             return;
         }
 
         System.out.print("예약 시간 (HH:mm): ");
         String appointmentTime = scanner.nextLine();
-        try {
-            timeFormat.parse(appointmentTime);  // 시간 형식 유효성 검사
-        } catch (ParseException e) {
-            System.out.println("시간 형식이 잘못되었습니다.");
-            return;
-        }
-
         System.out.print("상태: ");
         String status = scanner.nextLine();
 
-        try {
-            Appointment appointment = new Appointment(patient, doctor, appointmentDate, appointmentTime, status);
-            appointments.add(appointment);
-            System.out.println("진료 예약이 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            System.out.println("예약 추가 중 오류가 발생했습니다: " + e.getMessage());
-        }
+        int appointmentId = appointments.size() + 1;
+        AppointmentDTO appointment = new AppointmentDTO(appointmentId, patient, doctor, appointmentDate, appointmentTime, status);
+        appointments.add(appointment);
+        System.out.println("진료 예약이 추가되었습니다.");
     }
 
-    private static void viewAppointmentInfo(Scanner scanner) {
+    private void viewAppointmentInfo(Scanner scanner) {
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        Appointment appointment = findAppointmentByPatientName(patientName);
+        AppointmentDTO appointment = findAppointmentByPatientName(patientName);
         if (appointment != null) {
-            appointment.viewAppointment();
+            System.out.println("예약 ID: " + appointment.getAppointmentId());
+            System.out.println("환자: " + appointment.getPatient().getName());
+            System.out.println("의사: " + appointment.getDoctor().getName());
+            System.out.println("날짜: " + appointment.getAppointmentDate());
+            System.out.println("시간: " + appointment.getAppointmentTime());
+            System.out.println("상태: " + appointment.getStatus());
         } else {
             System.out.println("해당 이름의 진료 예약이 없습니다.");
         }
     }
 
-    private static void updateAppointment(Scanner scanner) {
+    private void updateAppointment(Scanner scanner) {
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        Appointment appointment = findAppointmentByPatientName(patientName);
+        AppointmentDTO appointment = findAppointmentByPatientName(patientName);
         if (appointment != null) {
             System.out.print("새 예약 날짜 (yyyy-MM-dd): ");
             String dateStr = scanner.nextLine();
             Date newDate;
             try {
-                newDate = dateFormat.parse(dateStr);
-            } catch (ParseException e) {
+                newDate = java.sql.Date.valueOf(dateStr); // 문자열을 Date 객체로 변환
+            } catch (Exception e) {
                 System.out.println("날짜 형식이 잘못되었습니다.");
                 return;
             }
 
             System.out.print("새 예약 시간 (HH:mm): ");
             String newTime = scanner.nextLine();
-            try {
-                timeFormat.parse(newTime);  // 시간 형식 유효성 검사
-            } catch (ParseException e) {
-                System.out.println("시간 형식이 잘못되었습니다.");
-                return;
-            }
-
-            appointment.updateAppointment(newDate, newTime);
+            appointment.setAppointmentDate(newDate);
+            appointment.setAppointmentTime(newTime);
+            System.out.println("예약이 업데이트되었습니다.");
         } else {
             System.out.println("해당 이름의 진료 예약이 없습니다.");
         }
     }
 
-    private static void cancelAppointment(Scanner scanner) {
+    private void cancelAppointment(Scanner scanner) {
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        Appointment appointment = findAppointmentByPatientName(patientName);
+        AppointmentDTO appointment = findAppointmentByPatientName(patientName);
         if (appointment != null) {
-            appointment.cancelAppointment();
+            appointment.setStatus("취소됨");
+            System.out.println("예약이 취소되었습니다.");
         } else {
             System.out.println("해당 이름의 진료 예약이 없습니다.");
         }
     }
 
-    private static Appointment findAppointmentByPatientName(String name) {
-        for (Appointment appointment : appointments) {
+    private AppointmentDTO findAppointmentByPatientName(String name) {
+        for (AppointmentDTO appointment : appointments) {
             if (appointment.getPatient().getName().equalsIgnoreCase(name)) {
                 return appointment;
             }
