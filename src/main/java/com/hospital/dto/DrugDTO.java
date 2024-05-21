@@ -11,7 +11,6 @@ public class DrugDTO {
         this.price = price;
     }
 
-    // Getter와 Setter 메소드
     public String getName() {
         return name;
     }
@@ -34,15 +33,5 @@ public class DrugDTO {
 
     public void setPrice(double price) {
         this.price = price;
-    }
-
-    // 약품의 재고를 추가하는 메소드
-    public void addQuantity(int quantity) {
-        this.quantity += quantity;
-    }
-
-    // 약품을 조제하는 메소드
-    public void dispense(int quantity) {
-        this.quantity -= quantity;
     }
 }

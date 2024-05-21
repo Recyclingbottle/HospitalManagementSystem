@@ -30,12 +30,10 @@ public class DoctorDTO extends CrewDTO {
         this.assignedPatients = assignedPatients;
     }
 
-    // 환자 추가 메소드
     public void addPatient(PatientDTO patient) {
         this.assignedPatients.add(patient);
     }
 
-    // 환자 제거 메소드
     public void removePatient(PatientDTO patient) {
         this.assignedPatients.remove(patient);
     }

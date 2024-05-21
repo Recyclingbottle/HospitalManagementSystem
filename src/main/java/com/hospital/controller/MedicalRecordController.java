@@ -1,18 +1,22 @@
-package com.hospital.manager;
+package com.hospital.controller;
 
 import com.hospital.dto.DoctorDTO;
 import com.hospital.dto.MedicalRecordDTO;
 import com.hospital.dto.PatientDTO;
+import com.hospital.service.DoctorService;
+import com.hospital.service.MedicalRecordService;
+import com.hospital.service.PatientService;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
-public class MedicalRecordManager {
-    private static List<MedicalRecordDTO> medicalRecords = new ArrayList<>();
+public class MedicalRecordController {
+    private MedicalRecordService medicalRecordService = new MedicalRecordService();
+    private PatientService patientService = new PatientService();
+    private DoctorService doctorService = new DoctorService();
 
-    public static void menu(Scanner scanner) {
+    public void menu(Scanner scanner) {
         while (true) {
             System.out.println("1. 진료 기록 추가");
             System.out.println("2. 진료 기록 정보 보기");
@@ -20,7 +24,7 @@ public class MedicalRecordManager {
             System.out.println("4. 돌아가기");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  // Enter key 처리
+            scanner.nextLine();  
 
             switch (choice) {
                 case 1:
@@ -41,10 +45,14 @@ public class MedicalRecordManager {
         }
     }
 
-    private static void addMedicalRecord(Scanner scanner) {
+    private void addMedicalRecord(Scanner scanner) {
+        System.out.print("진료 기록 ID: ");
+        int recordId = scanner.nextInt();
+        scanner.nextLine();  
+
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        PatientDTO patient = PatientManager.findPatientByName(patientName);
+        PatientDTO patient = patientService.findPatientByName(patientName);
         if (patient == null) {
             System.out.println("해당 이름의 환자가 없습니다.");
             return;
@@ -52,7 +60,7 @@ public class MedicalRecordManager {
 
         System.out.print("의사 이름: ");
         String doctorName = scanner.nextLine();
-        DoctorDTO doctor = DoctorManager.findDoctorByName(doctorName);
+        DoctorDTO doctor = doctorService.findDoctorByName(doctorName);
         if (doctor == null) {
             System.out.println("해당 이름의 의사가 없습니다.");
             return;
@@ -73,16 +81,15 @@ public class MedicalRecordManager {
         System.out.print("치료: ");
         String treatment = scanner.nextLine();
 
-        int recordId = medicalRecords.size() + 1;
-        MedicalRecordDTO medicalRecord = new MedicalRecordDTO(recordId, patient, doctor, visitDate, diagnosis, treatment);
-        medicalRecords.add(medicalRecord);
+        medicalRecordService.addMedicalRecord(recordId, patient, doctor, visitDate, diagnosis, treatment);
         System.out.println("진료 기록이 추가되었습니다.");
     }
 
-    private static void viewMedicalRecordInfo(Scanner scanner) {
-        System.out.print("환자 이름: ");
-        String patientName = scanner.nextLine();
-        MedicalRecordDTO medicalRecord = findMedicalRecordByPatientName(patientName);
+    private void viewMedicalRecordInfo(Scanner scanner) {
+        System.out.print("진료 기록 ID: ");
+        int recordId = scanner.nextInt();
+        scanner.nextLine();  
+        MedicalRecordDTO medicalRecord = medicalRecordService.findMedicalRecordById(recordId);
         if (medicalRecord != null) {
             System.out.println("진료 기록 ID: " + medicalRecord.getRecordId());
             System.out.println("환자: " + medicalRecord.getPatient().getName());
@@ -91,33 +98,24 @@ public class MedicalRecordManager {
             System.out.println("진단: " + medicalRecord.getDiagnosis());
             System.out.println("치료: " + medicalRecord.getTreatment());
         } else {
-            System.out.println("해당 이름의 진료 기록이 없습니다.");
+            System.out.println("해당 ID의 진료 기록이 없습니다.");
         }
     }
 
-    private static void updateMedicalRecord(Scanner scanner) {
-        System.out.print("환자 이름: ");
-        String patientName = scanner.nextLine();
-        MedicalRecordDTO medicalRecord = findMedicalRecordByPatientName(patientName);
+    private void updateMedicalRecord(Scanner scanner) {
+        System.out.print("진료 기록 ID: ");
+        int recordId = scanner.nextInt();
+        scanner.nextLine();  
+        MedicalRecordDTO medicalRecord = medicalRecordService.findMedicalRecordById(recordId);
         if (medicalRecord != null) {
             System.out.print("새 진단: ");
             String newDiagnosis = scanner.nextLine();
             System.out.print("새 치료: ");
             String newTreatment = scanner.nextLine();
-            medicalRecord.setDiagnosis(newDiagnosis);
-            medicalRecord.setTreatment(newTreatment);
+            medicalRecordService.updateMedicalRecord(recordId, newDiagnosis, newTreatment);
             System.out.println("진료 기록이 업데이트되었습니다.");
         } else {
-            System.out.println("해당 이름의 진료 기록이 없습니다.");
+            System.out.println("해당 ID의 진료 기록이 없습니다.");
         }
-    }
-
-    private static MedicalRecordDTO findMedicalRecordByPatientName(String name) {
-        for (MedicalRecordDTO medicalRecord : medicalRecords) {
-            if (medicalRecord.getPatient().getName().equalsIgnoreCase(name)) {
-                return medicalRecord;
-            }
-        }
-        return null;
     }
 }

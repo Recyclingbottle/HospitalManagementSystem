@@ -16,7 +16,6 @@ public class RoomDTO {
         this.assignedPatients = new ArrayList<>();
     }
 
-    // Getter와 Setter 메소드
     public int getRoomId() {
         return roomId;
     }
@@ -47,23 +46,5 @@ public class RoomDTO {
 
     public void setAssignedPatients(List<PatientDTO> assignedPatients) {
         this.assignedPatients = assignedPatients;
-    }
-
-    // 병실을 환자에게 배정하는 메소드
-    public void assignRoom(PatientDTO patient) {
-        if (!assignedPatients.contains(patient)) {
-            assignedPatients.add(patient);
-            this.availability = false;
-        }
-    }
-
-    // 병실 배정을 해제하는 메소드
-    public void releaseRoom(PatientDTO patient) {
-        if (assignedPatients.contains(patient)) {
-            assignedPatients.remove(patient);
-            if (assignedPatients.isEmpty()) {
-                this.availability = true;
-            }
-        }
     }
 }

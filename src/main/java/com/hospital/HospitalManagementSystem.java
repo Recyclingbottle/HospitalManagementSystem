@@ -1,35 +1,31 @@
 package com.hospital;
 
-import com.hospital.manager.*;
+import com.hospital.controller.*;
 import java.util.Scanner;
 
 public class HospitalManagementSystem {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-
-        UserManager userManager = new UserManager();
-        CrewManager crewManager = new CrewManager();
-        DoctorManager doctorManager = new DoctorManager();
-        NurseManager nurseManager = new NurseManager();
-        PatientManager patientManager = new PatientManager();
-        AppointmentManager appointmentManager = new AppointmentManager();
-        RoomManager roomManager = new RoomManager();
-        PharmacyManager pharmacyManager = new PharmacyManager();
-        MedicalRecordManager medicalRecordManager = new MedicalRecordManager();
-        BillingManager billingManager = new BillingManager();
+        AppointmentController appointmentController = new AppointmentController();
+        BillingController billingController = new BillingController();
+        CrewController crewController = new CrewController();
+        DoctorController doctorController = new DoctorController();
+        MedicalRecordController medicalRecordController = new MedicalRecordController();
+        NurseController nurseController = new NurseController();
+        PatientController patientController = new PatientController();
+        PharmacyController pharmacyController = new PharmacyController();
+        RoomController roomController = new RoomController();
 
         while (true) {
-            System.out.println("┌─────────────────────────────────────────────┐");
-            System.out.println("│                                             │");
-            System.out.println("│  ==========================================  │");
-            System.out.println("│            Hospital Management System        │");
-            System.out.println("│                                             │");
-            System.out.println("│    종합 병원 관리 시스템에 오신 것을 환영합니다    │");
-            System.out.println("│                                             │");
-            System.out.println("│  ==========================================  │");
-            System.out.println("│                                             │");
-            System.out.println("└─────────────────────────────────────────────┘");
-            System.out.println("===============================================");
+            System.out.println("┌────────────────────────────────────────────┐");
+            System.out.println("│                                            │");
+            System.out.println("│    Welcome to the Hospital Management      │");
+            System.out.println("│                System                      │");
+            System.out.println("│        종합 병원 관리 시스템에 오신 것을       │");
+            System.out.println("│                환영합니다                   │");
+            System.out.println("│                                            │");
+            System.out.println("└────────────────────────────────────────────┘");
+            System.out.println("===========================================");
             System.out.println("1. 사용자 관리");
             System.out.println("2. 병원 직원 관리");
             System.out.println("3. 의사 관리");
@@ -43,38 +39,38 @@ public class HospitalManagementSystem {
             System.out.println("0. 종료");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  // Enter key 처리
+            scanner.nextLine();  
 
             switch (choice) {
                 case 1:
-                    userManager.menu(scanner);
+                    crewController.menu(scanner);
                     break;
                 case 2:
-                    crewManager.menu(scanner);
+                    crewController.menu(scanner);
                     break;
                 case 3:
-                    doctorManager.menu(scanner);
+                    doctorController.menu(scanner);
                     break;
                 case 4:
-                    nurseManager.menu(scanner);
+                    nurseController.menu(scanner);
                     break;
                 case 5:
-                    patientManager.menu(scanner);
+                    patientController.menu(scanner);
                     break;
                 case 6:
-                    appointmentManager.menu(scanner);
+                    appointmentController.menu(scanner);
                     break;
                 case 7:
-                    roomManager.menu(scanner);
+                    roomController.menu(scanner);
                     break;
                 case 8:
-                    pharmacyManager.menu(scanner);
+                    pharmacyController.menu(scanner);
                     break;
                 case 9:
-                    medicalRecordManager.menu(scanner);
+                    medicalRecordController.menu(scanner);
                     break;
                 case 10:
-                    billingManager.menu(scanner);
+                    billingController.menu(scanner);
                     break;
                 case 0:
                     System.out.println("프로그램을 종료합니다.");

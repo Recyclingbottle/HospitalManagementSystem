@@ -15,7 +15,6 @@ public class PatientDTO extends UserDTO {
         this.assignedDoctor = assignedDoctor;
     }
 
-    // Getter와 Setter 메소드
     public List<String> getMedicalHistory() {
         return medicalHistory;
     }
@@ -38,15 +37,5 @@ public class PatientDTO extends UserDTO {
 
     public void setAssignedDoctor(DoctorDTO assignedDoctor) {
         this.assignedDoctor = assignedDoctor;
-    }
-
-    // 진료 기록을 추가하는 메소드
-    public void addMedicalHistory(String record) {
-        medicalHistory.add(record);
-    }
-
-    // 현재 복용 약물을 추가하는 메소드
-    public void addCurrentMedication(String medication) {
-        currentMedication.add(medication);
     }
 }

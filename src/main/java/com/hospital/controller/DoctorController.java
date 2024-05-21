@@ -1,16 +1,18 @@
-package com.hospital.manager;
+package com.hospital.controller;
 
 import com.hospital.dto.DoctorDTO;
 import com.hospital.dto.PatientDTO;
+import com.hospital.service.DoctorService;
+import com.hospital.service.PatientService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class DoctorManager {
-    private static List<DoctorDTO> doctors = new ArrayList<>();
+public class DoctorController {
+    private DoctorService doctorService = new DoctorService();
+    private PatientService patientService = new PatientService();
 
-    public static void menu(Scanner scanner) {
+    public void menu(Scanner scanner) {
         while (true) {
             System.out.println("1. 의사 추가");
             System.out.println("2. 의사 정보 보기");
@@ -20,7 +22,7 @@ public class DoctorManager {
             System.out.println("6. 돌아가기");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  // Enter key 처리
+            scanner.nextLine();  
 
             switch (choice) {
                 case 1:
@@ -47,30 +49,29 @@ public class DoctorManager {
         }
     }
 
-    private static void addDoctor(Scanner scanner) {
+    private void addDoctor(Scanner scanner) {
         System.out.print("의사 이름: ");
         String name = scanner.nextLine();
         System.out.print("의사 나이: ");
         int age = scanner.nextInt();
-        scanner.nextLine();  // Enter key 처리
+        scanner.nextLine();  
         System.out.print("연락처: ");
         String contactInfo = scanner.nextLine();
         System.out.print("근무 상태 (true/false): ");
         boolean isOnDuty = scanner.nextBoolean();
         System.out.print("월급: ");
         double salary = scanner.nextDouble();
-        scanner.nextLine();  // Enter key 처리
+        scanner.nextLine();  
         System.out.print("전문 분야: ");
         String specialty = scanner.nextLine();
-        DoctorDTO doctor = new DoctorDTO(name, age, contactInfo, isOnDuty, salary, specialty);
-        doctors.add(doctor);
+        doctorService.addDoctor(name, age, contactInfo, isOnDuty, salary, specialty);
         System.out.println("의사가 추가되었습니다.");
     }
 
-    private static void viewDoctorInfo(Scanner scanner) {
+    private void viewDoctorInfo(Scanner scanner) {
         System.out.print("의사 이름: ");
         String name = scanner.nextLine();
-        DoctorDTO doctor = findDoctorByName(name);
+        DoctorDTO doctor = doctorService.findDoctorByName(name);
         if (doctor != null) {
             System.out.println("이름: " + doctor.getName());
             System.out.println("나이: " + doctor.getAge());
@@ -83,16 +84,16 @@ public class DoctorManager {
         }
     }
 
-    private static void viewAssignedPatients(Scanner scanner) {
+    private void viewAssignedPatients(Scanner scanner) {
         System.out.print("의사 이름: ");
         String name = scanner.nextLine();
-        DoctorDTO doctor = findDoctorByName(name);
+        DoctorDTO doctor = doctorService.findDoctorByName(name);
         if (doctor != null) {
-            System.out.println("배정된 환자 목록:");
             List<PatientDTO> patients = doctor.getAssignedPatients();
             if (patients.isEmpty()) {
                 System.out.println("배정된 환자가 없습니다.");
             } else {
+                System.out.println("배정된 환자 목록:");
                 for (PatientDTO patient : patients) {
                     System.out.println("- " + patient.getName());
                 }
@@ -102,50 +103,41 @@ public class DoctorManager {
         }
     }
 
-    private static void addPatientToDoctor(Scanner scanner) {
+    private void addPatientToDoctor(Scanner scanner) {
         System.out.print("의사 이름: ");
         String doctorName = scanner.nextLine();
-        DoctorDTO doctor = findDoctorByName(doctorName);
+        DoctorDTO doctor = doctorService.findDoctorByName(doctorName);
         if (doctor == null) {
             System.out.println("해당 이름의 의사가 없습니다.");
             return;
         }
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        PatientDTO patient = PatientManager.findPatientByName(patientName);
+        PatientDTO patient = patientService.findPatientByName(patientName);
         if (patient != null) {
-            doctor.addPatient(patient);
+            doctorService.addPatientToDoctor(doctorName, patient);
             System.out.println("환자가 의사에게 배정되었습니다.");
         } else {
             System.out.println("해당 이름의 환자가 없습니다.");
         }
     }
 
-    private static void removePatientFromDoctor(Scanner scanner) {
+    private void removePatientFromDoctor(Scanner scanner) {
         System.out.print("의사 이름: ");
         String doctorName = scanner.nextLine();
-        DoctorDTO doctor = findDoctorByName(doctorName);
+        DoctorDTO doctor = doctorService.findDoctorByName(doctorName);
         if (doctor == null) {
             System.out.println("해당 이름의 의사가 없습니다.");
             return;
         }
         System.out.print("환자 이름: ");
         String patientName = scanner.nextLine();
-        PatientDTO patient = PatientManager.findPatientByName(patientName);
+        PatientDTO patient = patientService.findPatientByName(patientName);
         if (patient != null) {
-            doctor.removePatient(patient);
+            doctorService.removePatientFromDoctor(doctorName, patient);
             System.out.println("환자가 의사에게서 해제되었습니다.");
         } else {
             System.out.println("해당 이름의 환자가 없습니다.");
         }
-    }
-
-    public static DoctorDTO findDoctorByName(String name) {
-        for (DoctorDTO doctor : doctors) {
-            if (doctor.getName().equalsIgnoreCase(name)) {
-                return doctor;
-            }
-        }
-        return null;
     }
 }

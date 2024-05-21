@@ -11,7 +11,6 @@ public class UserDTO {
         this.contactInfo = contactInfo;
     }
 
-    // Getter와 Setter 메소드
     public String getName() {
         return name;
     }
