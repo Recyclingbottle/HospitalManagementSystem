@@ -11,6 +11,7 @@ public class NurseDTO extends CrewDTO {
         this.assignedWards = new ArrayList<>();
     }
 
+    // Getter와 Setter 메소드
     public List<String> getAssignedWards() {
         return assignedWards;
     }

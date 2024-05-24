@@ -9,9 +9,9 @@ import java.util.List;
 public class DoctorService {
     private List<DoctorDTO> doctors = new ArrayList<>();
 
-    public void addDoctor(String name, int age, String contactInfo, boolean isOnDuty, double salary, String specialty) {
-        DoctorDTO doctor = new DoctorDTO(name, age, contactInfo, isOnDuty, salary, specialty);
+    public void addDoctor(DoctorDTO doctor) {
         doctors.add(doctor);
+        System.out.println("의사가 추가되었습니다: " + doctor.getName());
     }
 
     public DoctorDTO findDoctorByName(String name) {
@@ -24,20 +24,34 @@ public class DoctorService {
     }
 
     public List<DoctorDTO> getAllDoctors() {
-        return new ArrayList<>(doctors);
+        return doctors;
     }
 
     public void addPatientToDoctor(String doctorName, PatientDTO patient) {
         DoctorDTO doctor = findDoctorByName(doctorName);
         if (doctor != null) {
-            doctor.addPatient(patient);
+            if (!doctor.getAssignedPatients().contains(patient)) {
+                doctor.getAssignedPatients().add(patient);
+                System.out.println(patient.getName() + " 환자가 " + doctor.getName() + " 의사에게 배정되었습니다.");
+            } else {
+                System.out.println("해당 환자는 이미 배정되어 있습니다.");
+            }
+        } else {
+            System.out.println("해당 이름의 의사가 없습니다.");
         }
     }
 
     public void removePatientFromDoctor(String doctorName, PatientDTO patient) {
         DoctorDTO doctor = findDoctorByName(doctorName);
         if (doctor != null) {
-            doctor.removePatient(patient);
+            if (doctor.getAssignedPatients().contains(patient)) {
+                doctor.getAssignedPatients().remove(patient);
+                System.out.println(patient.getName() + " 환자가 " + doctor.getName() + " 의사에게서 해제되었습니다.");
+            } else {
+                System.out.println("해당 환자는 배정되지 않았습니다.");
+            }
+        } else {
+            System.out.println("해당 이름의 의사가 없습니다.");
         }
     }
 }

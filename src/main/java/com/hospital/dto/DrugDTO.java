@@ -11,6 +11,7 @@ public class DrugDTO {
         this.price = price;
     }
 
+    // Getter와 Setter 메소드
     public String getName() {
         return name;
     }

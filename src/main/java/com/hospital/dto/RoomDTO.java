@@ -16,6 +16,7 @@ public class RoomDTO {
         this.assignedPatients = new ArrayList<>();
     }
 
+    // Getter와 Setter 메소드
     public int getRoomId() {
         return roomId;
     }

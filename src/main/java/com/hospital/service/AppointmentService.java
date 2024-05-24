@@ -9,39 +9,33 @@ import java.util.Date;
 import java.util.List;
 
 public class AppointmentService {
-    private List<AppointmentDTO> appointments = new ArrayList<>();
+    private List<AppointmentDTO> appointments;
 
-    public void addAppointment(PatientDTO patient, DoctorDTO doctor, Date appointmentDate, String appointmentTime, String status) {
+    public AppointmentService() {
+        this.appointments = new ArrayList<>();
+    }
+
+    public synchronized void addAppointment(PatientDTO patient, DoctorDTO doctor, Date appointmentDate, String appointmentTime, String status) {
         int appointmentId = appointments.size() + 1;
         AppointmentDTO appointment = new AppointmentDTO(appointmentId, patient, doctor, appointmentDate, appointmentTime, status);
         appointments.add(appointment);
     }
 
-    public List<AppointmentDTO> getAppointments() {
+    public synchronized List<AppointmentDTO> getAppointments() {
         return new ArrayList<>(appointments);
     }
 
-    public AppointmentDTO findAppointmentById(int appointmentId) {
+    public synchronized void updateAppointment(int appointmentId, Date newDate, String newTime) {
         for (AppointmentDTO appointment : appointments) {
             if (appointment.getAppointmentId() == appointmentId) {
-                return appointment;
+                appointment.setAppointmentDate(newDate);
+                appointment.setAppointmentTime(newTime);
+                return;
             }
         }
-        return null;
     }
 
-    public void updateAppointment(int appointmentId, Date newDate, String newTime) {
-        AppointmentDTO appointment = findAppointmentById(appointmentId);
-        if (appointment != null) {
-            appointment.setAppointmentDate(newDate);
-            appointment.setAppointmentTime(newTime);
-        }
-    }
-
-    public void cancelAppointment(int appointmentId) {
-        AppointmentDTO appointment = findAppointmentById(appointmentId);
-        if (appointment != null) {
-            appointment.setStatus("Cancelled");
-        }
+    public synchronized void cancelAppointment(int appointmentId) {
+        appointments.removeIf(appointment -> appointment.getAppointmentId() == appointmentId);
     }
 }

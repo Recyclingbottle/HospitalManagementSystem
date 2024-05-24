@@ -4,15 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PatientDTO extends UserDTO {
+    private int id;
     private List<String> medicalHistory;
     private List<String> currentMedication;
     private DoctorDTO assignedDoctor;
 
-    public PatientDTO(String name, int age, String contactInfo, DoctorDTO assignedDoctor) {
+    public PatientDTO(int id, String name, int age, String contactInfo) {
         super(name, age, contactInfo);
+        this.id = id;
         this.medicalHistory = new ArrayList<>();
         this.currentMedication = new ArrayList<>();
-        this.assignedDoctor = assignedDoctor;
+    }
+
+    // Getter와 Setter 메소드
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public List<String> getMedicalHistory() {

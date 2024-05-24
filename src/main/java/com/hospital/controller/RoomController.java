@@ -2,14 +2,16 @@ package com.hospital.controller;
 
 import com.hospital.dto.PatientDTO;
 import com.hospital.dto.RoomType;
-import com.hospital.service.PatientService;
 import com.hospital.service.RoomService;
 
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RoomController {
     private RoomService roomService = new RoomService();
-    private PatientService patientService = new PatientService();
+    private ExecutorService executor = Executors.newFixedThreadPool(5);
 
     public void menu(Scanner scanner) {
         while (true) {
@@ -23,86 +25,164 @@ public class RoomController {
             int choice = scanner.nextInt();
             scanner.nextLine();  
 
+            CountDownLatch latch = new CountDownLatch(1);  // 비동기 작업이 완료될 때까지 기다리는 래치
+
             switch (choice) {
                 case 1:
-                    addRoom(scanner);
+                    executor.submit(new AddRoomTask(scanner, latch));
                     break;
                 case 2:
-                    viewRoomInfo(scanner);
+                    executor.submit(new ViewRoomInfoTask(scanner, latch));
                     break;
                 case 3:
-                    assignRoom(scanner);
+                    executor.submit(new AssignRoomTask(scanner, latch));
                     break;
                 case 4:
-                    releaseRoom(scanner);
+                    executor.submit(new ReleaseRoomTask(scanner, latch));
                     break;
                 case 5:
-                    viewRoomStatus(scanner);
+                    executor.submit(new ViewRoomStatusTask(scanner, latch));
                     break;
                 case 6:
+                    executor.shutdown();
                     return;
                 default:
                     System.out.println("잘못된 선택입니다. 다시 시도하세요.");
+                    latch.countDown();  // 잘못된 선택일 경우 래치를 감소시켜 다음 루프로 넘어가게 함
                     break;
+            }
+
+            try {
+                latch.await();  // 비동기 작업이 완료될 때까지 대기
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("작업이 중단되었습니다.");
             }
         }
     }
 
-    private void addRoom(Scanner scanner) {
-        System.out.print("병실 ID: ");
-        int roomId = scanner.nextInt();
-        scanner.nextLine();  
-        System.out.print("병실 유형 (GENERAL, ICU, PRIVATE, WARD): ");
-        String roomTypeStr = scanner.nextLine();
-        RoomType roomType;
-        try {
-            roomType = RoomType.valueOf(roomTypeStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            System.out.println("잘못된 병실 유형입니다.");
-            return;
+    private class AddRoomTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        AddRoomTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
         }
-        roomService.addRoom(roomId, roomType);
-    }
 
-    private void viewRoomInfo(Scanner scanner) {
-        System.out.print("병실 ID: ");
-        int roomId = scanner.nextInt();
-        scanner.nextLine();  
-        roomService.viewRoomInfo(roomId);
-    }
-
-    private void assignRoom(Scanner scanner) {
-        System.out.print("병실 ID: ");
-        int roomId = scanner.nextInt();
-        scanner.nextLine();  
-        System.out.print("환자 이름: ");
-        String patientName = scanner.nextLine();
-        PatientDTO patient = patientService.findPatientByName(patientName);
-        if (patient != null) {
-            roomService.assignRoom(roomId, patient);
-        } else {
-            System.out.println("해당 이름의 환자가 없습니다.");
+        @Override
+        public void run() {
+            try {
+                System.out.print("병실 ID: ");
+                int roomId = scanner.nextInt();
+                scanner.nextLine();  
+                System.out.print("병실 유형 (GENERAL, ICU, PRIVATE, WARD): ");
+                String roomTypeStr = scanner.nextLine();
+                RoomType roomType;
+                try {
+                    roomType = RoomType.valueOf(roomTypeStr.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    System.out.println("잘못된 병실 유형입니다.");
+                    return;
+                }
+                roomService.addRoom(roomId, roomType);
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
         }
     }
 
-    private void releaseRoom(Scanner scanner) {
-        System.out.print("병실 ID: ");
-        int roomId = scanner.nextInt();
-        scanner.nextLine();  
-        System.out.print("환자 이름: ");
-        String patientName = scanner.nextLine();
-        PatientDTO patient = patientService.findPatientByName(patientName);
-        if (patient != null) {
-            roomService.releaseRoom(roomId, patient);
-        } else {
-            System.out.println("해당 이름의 환자가 없습니다.");
+    private class ViewRoomInfoTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        ViewRoomInfoTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("병실 ID: ");
+                int roomId = scanner.nextInt();
+                scanner.nextLine();  
+                roomService.viewRoomInfo(roomId);
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
         }
     }
 
-    private void viewRoomStatus(Scanner scanner) {
-        System.out.print("병실 ID: ");
-        int roomId = scanner.nextInt();
-        scanner.nextLine();  
-        roomService.viewRoomStatus(roomId);
+    private class AssignRoomTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        AssignRoomTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("병실 ID: ");
+                int roomId = scanner.nextInt();
+                scanner.nextLine();  
+                System.out.print("환자 이름: ");
+                String patientName = scanner.nextLine();
+                PatientDTO patient = new PatientDTO(0, patientName, 0, "");
+                roomService.assignRoom(roomId, patient);
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
+        }
+    }
+
+    private class ReleaseRoomTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        ReleaseRoomTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("병실 ID: ");
+                int roomId = scanner.nextInt();
+                scanner.nextLine();  
+                System.out.print("환자 이름: ");
+                String patientName = scanner.nextLine();
+                PatientDTO patient = new PatientDTO(0, patientName, 0, "");
+                roomService.releaseRoom(roomId, patient);
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
+        }
+    }
+
+    private class ViewRoomStatusTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        ViewRoomStatusTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("병실 ID: ");
+                int roomId = scanner.nextInt();
+                scanner.nextLine();  
+                roomService.viewRoomStatus(roomId);
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
+        }
     }
 }

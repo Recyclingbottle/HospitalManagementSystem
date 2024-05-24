@@ -29,12 +29,4 @@ public class DoctorDTO extends CrewDTO {
     public void setAssignedPatients(List<PatientDTO> assignedPatients) {
         this.assignedPatients = assignedPatients;
     }
-
-    public void addPatient(PatientDTO patient) {
-        this.assignedPatients.add(patient);
-    }
-
-    public void removePatient(PatientDTO patient) {
-        this.assignedPatients.remove(patient);
-    }
 }

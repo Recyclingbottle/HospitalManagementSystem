@@ -10,6 +10,7 @@ public class NurseService {
 
     public void addNurse(NurseDTO nurse) {
         nurses.add(nurse);
+        System.out.println("간호사가 추가되었습니다: " + nurse.getName());
     }
 
     public NurseDTO findNurseByName(String name) {
@@ -22,20 +23,34 @@ public class NurseService {
     }
 
     public List<NurseDTO> getAllNurses() {
-        return new ArrayList<>(nurses);
+        return nurses;
     }
 
-    public void assignWard(String nurseName, String ward) {
+    public void assignWardToNurse(String nurseName, String ward) {
         NurseDTO nurse = findNurseByName(nurseName);
-        if (nurse != null && !nurse.getAssignedWards().contains(ward)) {
-            nurse.getAssignedWards().add(ward);
+        if (nurse != null) {
+            if (!nurse.getAssignedWards().contains(ward)) {
+                nurse.getAssignedWards().add(ward);
+                System.out.println(ward + " 병동이 " + nurse.getName() + " 간호사에게 배정되었습니다.");
+            } else {
+                System.out.println("해당 병동은 이미 배정되어 있습니다.");
+            }
+        } else {
+            System.out.println("해당 이름의 간호사가 없습니다.");
         }
     }
 
-    public void removeWard(String nurseName, String ward) {
+    public void removeWardFromNurse(String nurseName, String ward) {
         NurseDTO nurse = findNurseByName(nurseName);
         if (nurse != null) {
-            nurse.getAssignedWards().remove(ward);
+            if (nurse.getAssignedWards().contains(ward)) {
+                nurse.getAssignedWards().remove(ward);
+                System.out.println(ward + " 병동이 " + nurse.getName() + " 간호사에게서 해제되었습니다.");
+            } else {
+                System.out.println("해당 병동은 배정되지 않았습니다.");
+            }
+        } else {
+            System.out.println("해당 이름의 간호사가 없습니다.");
         }
     }
 }

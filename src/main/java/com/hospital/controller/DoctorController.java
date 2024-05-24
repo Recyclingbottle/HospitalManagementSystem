@@ -7,10 +7,14 @@ import com.hospital.service.PatientService;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DoctorController {
     private DoctorService doctorService = new DoctorService();
     private PatientService patientService = new PatientService();
+    private ExecutorService executor = Executors.newFixedThreadPool(5);
 
     public void menu(Scanner scanner) {
         while (true) {
@@ -24,120 +28,194 @@ public class DoctorController {
             int choice = scanner.nextInt();
             scanner.nextLine();  
 
+            CountDownLatch latch = new CountDownLatch(1);  // 비동기 작업이 완료될 때까지 기다리는 래치
+
             switch (choice) {
                 case 1:
-                    addDoctor(scanner);
+                    executor.submit(new AddDoctorTask(scanner, latch));
                     break;
                 case 2:
-                    viewDoctorInfo(scanner);
+                    executor.submit(new ViewDoctorInfoTask(scanner, latch));
                     break;
                 case 3:
-                    viewAssignedPatients(scanner);
+                    executor.submit(new ViewAssignedPatientsTask(scanner, latch));
                     break;
                 case 4:
-                    addPatientToDoctor(scanner);
+                    executor.submit(new AddPatientToDoctorTask(scanner, latch));
                     break;
                 case 5:
-                    removePatientFromDoctor(scanner);
+                    executor.submit(new RemovePatientFromDoctorTask(scanner, latch));
                     break;
                 case 6:
+                    executor.shutdown();
                     return;
                 default:
                     System.out.println("잘못된 선택입니다. 다시 시도하세요.");
+                    latch.countDown();  // 잘못된 선택일 경우 래치를 감소시켜 다음 루프로 넘어가게 함
                     break;
             }
-        }
-    }
 
-    private void addDoctor(Scanner scanner) {
-        System.out.print("의사 이름: ");
-        String name = scanner.nextLine();
-        System.out.print("의사 나이: ");
-        int age = scanner.nextInt();
-        scanner.nextLine();  
-        System.out.print("연락처: ");
-        String contactInfo = scanner.nextLine();
-        System.out.print("근무 상태 (true/false): ");
-        boolean isOnDuty = scanner.nextBoolean();
-        System.out.print("월급: ");
-        double salary = scanner.nextDouble();
-        scanner.nextLine();  
-        System.out.print("전문 분야: ");
-        String specialty = scanner.nextLine();
-        doctorService.addDoctor(name, age, contactInfo, isOnDuty, salary, specialty);
-        System.out.println("의사가 추가되었습니다.");
-    }
-
-    private void viewDoctorInfo(Scanner scanner) {
-        System.out.print("의사 이름: ");
-        String name = scanner.nextLine();
-        DoctorDTO doctor = doctorService.findDoctorByName(name);
-        if (doctor != null) {
-            System.out.println("이름: " + doctor.getName());
-            System.out.println("나이: " + doctor.getAge());
-            System.out.println("연락처: " + doctor.getContactInfo());
-            System.out.println("근무 상태: " + (doctor.isOnDuty() ? "출근 중" : "퇴근 중"));
-            System.out.println("월급: " + doctor.getSalary());
-            System.out.println("전문 분야: " + doctor.getSpecialty());
-        } else {
-            System.out.println("해당 이름의 의사가 없습니다.");
-        }
-    }
-
-    private void viewAssignedPatients(Scanner scanner) {
-        System.out.print("의사 이름: ");
-        String name = scanner.nextLine();
-        DoctorDTO doctor = doctorService.findDoctorByName(name);
-        if (doctor != null) {
-            List<PatientDTO> patients = doctor.getAssignedPatients();
-            if (patients.isEmpty()) {
-                System.out.println("배정된 환자가 없습니다.");
-            } else {
-                System.out.println("배정된 환자 목록:");
-                for (PatientDTO patient : patients) {
-                    System.out.println("- " + patient.getName());
-                }
+            try {
+                latch.await();  // 비동기 작업이 완료될 때까지 대기
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("작업이 중단되었습니다.");
             }
-        } else {
-            System.out.println("해당 이름의 의사가 없습니다.");
         }
     }
 
-    private void addPatientToDoctor(Scanner scanner) {
-        System.out.print("의사 이름: ");
-        String doctorName = scanner.nextLine();
-        DoctorDTO doctor = doctorService.findDoctorByName(doctorName);
-        if (doctor == null) {
-            System.out.println("해당 이름의 의사가 없습니다.");
-            return;
+    private class AddDoctorTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        AddDoctorTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
         }
-        System.out.print("환자 이름: ");
-        String patientName = scanner.nextLine();
-        PatientDTO patient = patientService.findPatientByName(patientName);
-        if (patient != null) {
-            doctorService.addPatientToDoctor(doctorName, patient);
-            System.out.println("환자가 의사에게 배정되었습니다.");
-        } else {
-            System.out.println("해당 이름의 환자가 없습니다.");
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("의사 이름: ");
+                String name = scanner.nextLine();
+                System.out.print("의사 나이: ");
+                int age = scanner.nextInt();
+                scanner.nextLine();  
+                System.out.print("연락처: ");
+                String contactInfo = scanner.nextLine();
+                System.out.print("근무 상태 (true/false): ");
+                boolean isOnDuty = scanner.nextBoolean();
+                System.out.print("월급: ");
+                double salary = scanner.nextDouble();
+                scanner.nextLine();  
+                System.out.print("전문 분야: ");
+                String specialty = scanner.nextLine();
+                DoctorDTO doctor = new DoctorDTO(name, age, contactInfo, isOnDuty, salary, specialty);
+                doctorService.addDoctor(doctor);
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
         }
     }
 
-    private void removePatientFromDoctor(Scanner scanner) {
-        System.out.print("의사 이름: ");
-        String doctorName = scanner.nextLine();
-        DoctorDTO doctor = doctorService.findDoctorByName(doctorName);
-        if (doctor == null) {
-            System.out.println("해당 이름의 의사가 없습니다.");
-            return;
+    private class ViewDoctorInfoTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        ViewDoctorInfoTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
         }
-        System.out.print("환자 이름: ");
-        String patientName = scanner.nextLine();
-        PatientDTO patient = patientService.findPatientByName(patientName);
-        if (patient != null) {
-            doctorService.removePatientFromDoctor(doctorName, patient);
-            System.out.println("환자가 의사에게서 해제되었습니다.");
-        } else {
-            System.out.println("해당 이름의 환자가 없습니다.");
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("의사 이름: ");
+                String name = scanner.nextLine();
+                DoctorDTO doctor = doctorService.findDoctorByName(name);
+                if (doctor != null) {
+                    System.out.println("이름: " + doctor.getName());
+                    System.out.println("나이: " + doctor.getAge());
+                    System.out.println("연락처: " + doctor.getContactInfo());
+                    System.out.println("근무 상태: " + (doctor.isOnDuty() ? "출근 중" : "퇴근 중"));
+                    System.out.println("월급: " + doctor.getSalary());
+                    System.out.println("전문 분야: " + doctor.getSpecialty());
+                } else {
+                    System.out.println("해당 이름의 의사가 없습니다.");
+                }
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
+        }
+    }
+
+    private class ViewAssignedPatientsTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        ViewAssignedPatientsTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("의사 이름: ");
+                String name = scanner.nextLine();
+                DoctorDTO doctor = doctorService.findDoctorByName(name);
+                if (doctor != null) {
+                    List<PatientDTO> patients = doctor.getAssignedPatients();
+                    if (patients.isEmpty()) {
+                        System.out.println("배정된 환자가 없습니다.");
+                    } else {
+                        System.out.println("배정된 환자 목록:");
+                        for (PatientDTO patient : patients) {
+                            System.out.println("- " + patient.getName());
+                        }
+                    }
+                } else {
+                    System.out.println("해당 이름의 의사가 없습니다.");
+                }
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
+        }
+    }
+
+    private class AddPatientToDoctorTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        AddPatientToDoctorTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("의사 이름: ");
+                String doctorName = scanner.nextLine();
+                System.out.print("환자 이름: ");
+                String patientName = scanner.nextLine();
+                PatientDTO patient = patientService.findPatientByName(patientName);
+                if (patient != null) {
+                    doctorService.addPatientToDoctor(doctorName, patient);
+                } else {
+                    System.out.println("해당 이름의 환자가 없습니다.");
+                }
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
+        }
+    }
+
+    private class RemovePatientFromDoctorTask implements Runnable {
+        private Scanner scanner;
+        private CountDownLatch latch;
+
+        RemovePatientFromDoctorTask(Scanner scanner, CountDownLatch latch) {
+            this.scanner = scanner;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.print("의사 이름: ");
+                String doctorName = scanner.nextLine();
+                System.out.print("환자 이름: ");
+                String patientName = scanner.nextLine();
+                PatientDTO patient = patientService.findPatientByName(patientName);
+                if (patient != null) {
+                    doctorService.removePatientFromDoctor(doctorName, patient);
+                } else {
+                    System.out.println("해당 이름의 환자가 없습니다.");
+                }
+            } finally {
+                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            }
         }
     }
 }
