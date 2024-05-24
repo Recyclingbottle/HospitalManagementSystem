@@ -2,6 +2,7 @@ package com.hospital;
 
 import com.hospital.controller.*;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,38 +37,100 @@ public class HospitalManagementSystem {
             System.out.println("11. 종료");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();
+            scanner.nextLine();  // Enter key 처리
+
+            CountDownLatch latch = new CountDownLatch(1);
 
             switch (choice) {
                 case 1:
-                    executorService.submit(() -> patientController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            patientController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 2:
-                    executorService.submit(() -> doctorController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            doctorController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 3:
-                    executorService.submit(() -> nurseController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            nurseController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 4:
-                    executorService.submit(() -> appointmentController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            appointmentController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 5:
-                    executorService.submit(() -> billingController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            billingController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 6:
-                    executorService.submit(() -> medicalRecordController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            medicalRecordController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 7:
-                    executorService.submit(() -> roomController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            roomController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 8:
-                    executorService.submit(() -> pharmacyController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            pharmacyController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 9:
-                    executorService.submit(() -> crewController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            crewController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 10:
-                    executorService.submit(() -> chatController.menu(scanner));
+                    executorService.submit(() -> {
+                        try {
+                            chatController.menu(scanner);
+                        } finally {
+                            latch.countDown();
+                        }
+                    });
                     break;
                 case 11:
                     executorService.shutdown();
@@ -75,7 +138,14 @@ public class HospitalManagementSystem {
                     return;
                 default:
                     System.out.println("잘못된 선택입니다. 다시 시도하세요.");
+                    latch.countDown();
                     break;
+            }
+
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
