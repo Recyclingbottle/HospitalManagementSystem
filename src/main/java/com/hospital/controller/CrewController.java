@@ -10,8 +10,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CrewController {
-    private CrewService crewService = new CrewService();
-    private ExecutorService executor = Executors.newFixedThreadPool(5);
+    private CrewService crewService;
+    private ExecutorService executor;
+
+    public CrewController(CrewService crewService) {
+        this.crewService = crewService;
+        this.executor = Executors.newFixedThreadPool(5);
+    }
 
     public void menu(Scanner scanner) {
         while (true) {
@@ -21,9 +26,9 @@ public class CrewController {
             System.out.println("4. 돌아가기");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  
+            scanner.nextLine();  // Enter key 처리
 
-            CountDownLatch latch = new CountDownLatch(1);  // 비동기 작업이 완료될 때까지 기다리는 래치
+            CountDownLatch latch = new CountDownLatch(1);
 
             switch (choice) {
                 case 1:
@@ -40,15 +45,14 @@ public class CrewController {
                     return;
                 default:
                     System.out.println("잘못된 선택입니다. 다시 시도하세요.");
-                    latch.countDown();  // 잘못된 선택일 경우 래치를 감소시켜 다음 루프로 넘어가게 함
+                    latch.countDown();
                     break;
             }
 
             try {
                 latch.await();  // 비동기 작업이 완료될 때까지 대기
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("작업이 중단되었습니다.");
+                e.printStackTrace();
             }
         }
     }
@@ -64,25 +68,22 @@ public class CrewController {
 
         @Override
         public void run() {
-            try {
-                System.out.print("직원 이름: ");
-                String name = scanner.nextLine();
-                System.out.print("직원 나이: ");
-                int age = scanner.nextInt();
-                scanner.nextLine();  
-                System.out.print("연락처: ");
-                String contactInfo = scanner.nextLine();
-                System.out.print("근무 상태 (true/false): ");
-                boolean isOnDuty = scanner.nextBoolean();
-                System.out.print("월급: ");
-                double salary = scanner.nextDouble();
-                scanner.nextLine();  
-                CrewDTO crewMember = new CrewDTO(name, age, contactInfo, isOnDuty, salary);
-                crewService.addCrewMember(crewMember);
-                System.out.println("병원 직원이 추가되었습니다.");
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
-            }
+            System.out.print("직원 이름: ");
+            String name = scanner.nextLine();
+            System.out.print("직원 나이: ");
+            int age = scanner.nextInt();
+            scanner.nextLine();  // Enter key 처리
+            System.out.print("연락처: ");
+            String contactInfo = scanner.nextLine();
+            System.out.print("근무 상태 (true/false): ");
+            boolean isOnDuty = scanner.nextBoolean();
+            System.out.print("월급: ");
+            double salary = scanner.nextDouble();
+            scanner.nextLine();  // Enter key 처리
+            CrewDTO crewMember = new CrewDTO(name, age, contactInfo, isOnDuty, salary);
+            crewService.addCrewMember(crewMember);
+            System.out.println("병원 직원이 추가되었습니다.");
+            latch.countDown();
         }
     }
 
@@ -97,22 +98,19 @@ public class CrewController {
 
         @Override
         public void run() {
-            try {
-                System.out.print("직원 이름: ");
-                String name = scanner.nextLine();
-                CrewDTO crewMember = crewService.findCrewByName(name);
-                if (crewMember != null) {
-                    System.out.println("이름: " + crewMember.getName());
-                    System.out.println("나이: " + crewMember.getAge());
-                    System.out.println("연락처: " + crewMember.getContactInfo());
-                    System.out.println("근무 상태: " + (crewMember.isOnDuty() ? "출근 중" : "퇴근 중"));
-                    System.out.println("월급: " + crewMember.getSalary());
-                } else {
-                    System.out.println("해당 이름의 직원이 없습니다.");
-                }
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
+            System.out.print("직원 이름: ");
+            String name = scanner.nextLine();
+            CrewDTO crewMember = crewService.findCrewByName(name);
+            if (crewMember != null) {
+                System.out.println("이름: " + crewMember.getName());
+                System.out.println("나이: " + crewMember.getAge());
+                System.out.println("연락처: " + crewMember.getContactInfo());
+                System.out.println("근무 상태: " + (crewMember.isOnDuty() ? "출근 중" : "퇴근 중"));
+                System.out.println("월급: " + crewMember.getSalary());
+            } else {
+                System.out.println("해당 이름의 직원이 없습니다.");
             }
+            latch.countDown();
         }
     }
 
@@ -125,19 +123,16 @@ public class CrewController {
 
         @Override
         public void run() {
-            try {
-                List<CrewDTO> crewMembers = crewService.getAllCrewMembers();
-                if (crewMembers.isEmpty()) {
-                    System.out.println("등록된 직원이 없습니다.");
-                } else {
-                    for (CrewDTO crewMember : crewMembers) {
-                        System.out.println("이름: " + crewMember.getName() + ", 나이: " + crewMember.getAge() + ", 연락처: " + crewMember.getContactInfo() + ", 근무 상태: " + (crewMember.isOnDuty() ? "출근 중" : "퇴근 중") + ", 월급: " + crewMember.getSalary());
-                        System.out.println("--------------------");
-                    }
+            List<CrewDTO> crewMembers = crewService.getAllCrewMembers();
+            if (crewMembers.isEmpty()) {
+                System.out.println("등록된 직원이 없습니다.");
+            } else {
+                for (CrewDTO crewMember : crewMembers) {
+                    System.out.println("이름: " + crewMember.getName() + ", 나이: " + crewMember.getAge() + ", 연락처: " + crewMember.getContactInfo() + ", 근무 상태: " + (crewMember.isOnDuty() ? "출근 중" : "퇴근 중") + ", 월급: " + crewMember.getSalary());
+                    System.out.println("--------------------");
                 }
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
             }
+            latch.countDown();
         }
     }
 }

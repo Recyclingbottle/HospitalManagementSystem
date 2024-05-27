@@ -1,6 +1,7 @@
 package com.hospital;
 
 import com.hospital.controller.*;
+import com.hospital.service.*;
 import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -11,16 +12,30 @@ public class HospitalManagementSystem {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        AppointmentController appointmentController = new AppointmentController();
-        BillingController billingController = new BillingController();
-        CrewController crewController = new CrewController();
-        DoctorController doctorController = new DoctorController();
-        MedicalRecordController medicalRecordController = new MedicalRecordController();
-        NurseController nurseController = new NurseController();
-        PatientController patientController = new PatientController();
-        PharmacyController pharmacyController = new PharmacyController();
-        RoomController roomController = new RoomController();
-        ChatController chatController = new ChatController();
+
+        // 단일 서비스 인스턴스를 생성
+        PatientService patientService = new PatientService();
+        DoctorService doctorService = new DoctorService();
+        NurseService nurseService = new NurseService();
+        AppointmentService appointmentService = new AppointmentService();
+        BillingService billingService = new BillingService();
+        MedicalRecordService medicalRecordService = new MedicalRecordService();
+        RoomService roomService = new RoomService();
+        PharmacyService pharmacyService = new PharmacyService();
+        CrewService crewService = new CrewService();
+        ChatService chatService = new ChatService();
+
+        // 서비스 인스턴스를 각 컨트롤러에 전달
+        AppointmentController appointmentController = new AppointmentController(appointmentService, patientService, doctorService);
+        BillingController billingController = new BillingController(billingService, patientService);
+        CrewController crewController = new CrewController(crewService);
+        DoctorController doctorController = new DoctorController(doctorService, patientService);
+        MedicalRecordController medicalRecordController = new MedicalRecordController(medicalRecordService, patientService, doctorService);
+        NurseController nurseController = new NurseController(nurseService);
+        PatientController patientController = new PatientController(patientService, doctorService);
+        PharmacyController pharmacyController = new PharmacyController(pharmacyService);
+        RoomController roomController = new RoomController(roomService);
+        ChatController chatController = new ChatController(chatService);
 
         while (true) {
             System.out.println("병원 관리 시스템에 오신 것을 환영합니다.");
@@ -146,6 +161,7 @@ public class HospitalManagementSystem {
                 latch.await();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                System.out.println("메뉴 대기 중 인터럽트 발생.");
             }
         }
     }

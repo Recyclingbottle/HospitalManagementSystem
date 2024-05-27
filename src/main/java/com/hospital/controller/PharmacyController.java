@@ -9,8 +9,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class PharmacyController {
-    private PharmacyService pharmacyService = new PharmacyService();
-    private ExecutorService executor = Executors.newFixedThreadPool(5);
+    private PharmacyService pharmacyService;
+    private ExecutorService executor;
+
+    public PharmacyController(PharmacyService pharmacyService) {
+        this.pharmacyService = pharmacyService;
+        this.executor = Executors.newFixedThreadPool(5);
+    }
 
     public void menu(Scanner scanner) {
         while (true) {
@@ -21,9 +26,9 @@ public class PharmacyController {
             System.out.println("5. 돌아가기");
             System.out.print("선택: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  
+            scanner.nextLine();  // Enter key 처리
 
-            CountDownLatch latch = new CountDownLatch(1);  // 비동기 작업이 완료될 때까지 기다리는 래치
+            CountDownLatch latch = new CountDownLatch(1);
 
             switch (choice) {
                 case 1:
@@ -43,15 +48,14 @@ public class PharmacyController {
                     return;
                 default:
                     System.out.println("잘못된 선택입니다. 다시 시도하세요.");
-                    latch.countDown();  // 잘못된 선택일 경우 래치를 감소시켜 다음 루프로 넘어가게 함
+                    latch.countDown();
                     break;
             }
 
             try {
                 latch.await();  // 비동기 작업이 완료될 때까지 대기
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("작업이 중단되었습니다.");
+                e.printStackTrace();
             }
         }
     }
@@ -67,19 +71,16 @@ public class PharmacyController {
 
         @Override
         public void run() {
-            try {
-                System.out.print("약품 이름: ");
-                String drugName = scanner.nextLine();
-                System.out.print("재고 수량: ");
-                int quantity = scanner.nextInt();
-                System.out.print("가격: ");
-                double price = scanner.nextDouble();
-                scanner.nextLine();  
-                DrugDTO drug = new DrugDTO(drugName, quantity, price);
-                pharmacyService.addDrug(drug);
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
-            }
+            System.out.print("약품 이름: ");
+            String drugName = scanner.nextLine();
+            System.out.print("재고 수량: ");
+            int quantity = scanner.nextInt();
+            System.out.print("가격: ");
+            double price = scanner.nextDouble();
+            scanner.nextLine();  // Enter key 처리
+            DrugDTO drug = new DrugDTO(drugName, quantity, price);
+            pharmacyService.addDrug(drug);
+            latch.countDown();
         }
     }
 
@@ -94,13 +95,10 @@ public class PharmacyController {
 
         @Override
         public void run() {
-            try {
-                System.out.print("약품 이름: ");
-                String drugName = scanner.nextLine();
-                pharmacyService.viewDrugInfo(drugName);
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
-            }
+            System.out.print("약품 이름: ");
+            String drugName = scanner.nextLine();
+            pharmacyService.viewDrugInfo(drugName);
+            latch.countDown();
         }
     }
 
@@ -115,16 +113,13 @@ public class PharmacyController {
 
         @Override
         public void run() {
-            try {
-                System.out.print("약품 이름: ");
-                String drugName = scanner.nextLine();
-                System.out.print("조제 수량: ");
-                int quantity = scanner.nextInt();
-                scanner.nextLine();  
-                pharmacyService.dispenseDrug(drugName, quantity);
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
-            }
+            System.out.print("약품 이름: ");
+            String drugName = scanner.nextLine();
+            System.out.print("조제 수량: ");
+            int quantity = scanner.nextInt();
+            scanner.nextLine();  // Enter key 처리
+            pharmacyService.dispenseDrug(drugName, quantity);
+            latch.countDown();
         }
     }
 
@@ -137,11 +132,8 @@ public class PharmacyController {
 
         @Override
         public void run() {
-            try {
-                pharmacyService.viewAllDrugs();
-            } finally {
-                latch.countDown();  // 작업이 완료되면 래치를 감소시킴
-            }
+            pharmacyService.viewAllDrugs();
+            latch.countDown();
         }
     }
 }
