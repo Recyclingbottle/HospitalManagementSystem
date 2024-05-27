@@ -56,6 +56,7 @@
 - **UserController**: 사용자 관련 사용자 입력을 처리하는 클래스.
 
 ## 프로그램 구조
+```
 src/
 ├── main/
 │ ├── java/
@@ -101,5 +102,5 @@ src/
 │ │ │ │ ├── util/
 │ │ │ │ │ ├── DateUtils.java
 │ │ │ │ │ ├── InputValidator.java
-
+```
 
