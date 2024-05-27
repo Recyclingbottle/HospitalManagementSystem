@@ -103,4 +103,6 @@ src/
 │ │ │ │ │ ├── DateUtils.java
 │ │ │ │ │ ├── InputValidator.java
 ```
-
+## 실행 영상
+링크1[https://www.youtube.com/watch?v=dku_h0C2-48]
+링크2[https://www.youtube.com/watch?v=UjnasW8LSVE]
