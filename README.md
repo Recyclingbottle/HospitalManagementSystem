@@ -32,10 +32,10 @@
 개발 환경을 설정하는 단계별 가이드입니다.
 
 1. 리포지토리를 클론합니다.
-   ```
-   git clone <your-repository-url>
-   cd hospital-management-system
-   ```
+```
+git clone <your-repository-url>
+cd hospital-management-system
+```
 2. Maven을 사용하여 종속성을 설치합니다.
  ```bash
   mvn install
